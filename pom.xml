@@ -39,6 +39,8 @@
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>3.1.0</version> <configuration>
                 <mainClass>solver.Solver</mainClass>
+                <!-- Selenium leaves idle daemon threads behind, do not wait 15 s for them after the run -->
+                <cleanupDaemonThreads>false</cleanupDaemonThreads>
             </configuration>
             </plugin>
         </plugins>

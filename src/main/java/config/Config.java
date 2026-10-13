@@ -12,6 +12,7 @@ import java.util.logging.Level;
 public record Config(
     String inputPath,
     String outputPath,
+    String solutionPath,
     String targetSpecificLevel,
     List<String> allowedExtensions,
     Boolean cleanupOutput,

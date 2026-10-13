@@ -4,8 +4,11 @@
         <!-- Specifies the directory path where input files are located -->
         <inputPath>./input/</inputPath>
 
-        <!-- Specifies the directory path where output files should be placed -->
+        <!-- Specifies the directory path where output files should be placed. It is created if it does not exist -->
         <outputPath>./output/</outputPath>
+
+        <!-- (Optional) Specifies a directory to which every non-empty output file is copied after solving. It is never cleaned up and keeps the folder structure below the top level input folder (./input/contest/level1/in_x.txt results in <solutionPath>/contest/level1/out_x.txt) -->
+        <!-- <solutionPath>./solutions/</solutionPath> -->
 
         <!-- Defines a list of file extensions that are allowed to be processed -->
         <allowedExtensions>

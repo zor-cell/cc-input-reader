@@ -50,6 +50,11 @@ public class ConfigLoader {
                 throw new IllegalArgumentException("Output path is null");
             }
 
+            String solutionPath = getTagContentFromParent(solverElement, "solutionPath");
+            if(solutionPath != null && solutionPath.isBlank()) {
+                solutionPath = null;
+            }
+
             String targetSpecificLevel = getTagContentFromParent(solverElement, "targetSpecificLevel");
             if(targetSpecificLevel == null) {
                 targetSpecificLevel = "-1";
@@ -81,6 +86,7 @@ public class ConfigLoader {
             return new Config(
                     inputPath,
                     outputPath,
+                    solutionPath,
                     targetSpecificLevel,
                     allowedExtensions,
                     cleanupOutput,

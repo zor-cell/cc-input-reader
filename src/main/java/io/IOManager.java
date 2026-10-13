@@ -7,6 +7,9 @@ import solver.SolutionVerifier;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -171,8 +174,11 @@ public class IOManager {
     public void initialize() {
         File inputDirectory = new File(config.inputPath());
         File outputDirectory = new File(config.outputPath());
-        if (!inputDirectory.exists() || !inputDirectory.isDirectory() || !outputDirectory.exists() || !outputDirectory.isDirectory()) {
-            throw new IllegalArgumentException("Value of input or output directory is invalid. No such directory exists. Please look into config file");
+        if (!inputDirectory.isDirectory()) {
+            throw new IllegalArgumentException("Value of input directory is invalid. No such directory exists. Please look into config file");
+        }
+        if (!outputDirectory.isDirectory() && !outputDirectory.mkdirs()) {
+            throw new IllegalArgumentException("Value of output directory is invalid. It is not a directory and could not be created. Please look into config file");
         }
 
         inputFiles = new ArrayList<>();
@@ -219,6 +225,10 @@ public class IOManager {
                 continue;
             }
 
+            if(config.solutionPath() != null) {
+                saveSolution(inputFile, outputFile);
+            }
+
             //if visualizer feature is enabled use it on files
             if(verifier != null) {
                handleVerification(inputFile, outputFile, verifier);
@@ -231,6 +241,30 @@ public class IOManager {
         }
 
         log.info("All Files done!");
+    }
+
+    /**
+     * Copies an output file to the solutionPath, which is never cleaned up. The folder structure below the
+     * top level input folder is kept, e.g. input/spaceship/level8/in_x.txt results in {solutionPath}/spaceship/level8/out_x.txt.
+     * Empty output files are skipped, so a failed run does not wipe an existing solution.
+     */
+    private void saveSolution(File inputFile, File outputFile) {
+        if (outputFile.length() == 0) {
+            log.warning("Output for file " + inputFile.getName() + " is empty, solution is not saved");
+            return;
+        }
+
+        Path inputPath = Path.of(config.inputPath()).normalize();
+        Path inputRoot = inputPath.isAbsolute() ? inputPath : inputPath.getName(0);
+        Path subDirectory = inputRoot.relativize(inputFile.toPath().normalize().getParent());
+        Path target = Path.of(config.solutionPath()).resolve(subDirectory).resolve(outputFile.getName());
+
+        try {
+            Files.createDirectories(target.getParent());
+            Files.copy(outputFile.toPath(), target, StandardCopyOption.REPLACE_EXISTING);
+        } catch(IOException e) {
+            log.severe("Error during saving solution for file " + inputFile.getName() + ": " + e.getMessage());
+        }
     }
 
     private void handleVerification(File inputFile, File outputFile, SolutionVerifier verifier) {

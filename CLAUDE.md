@@ -33,8 +33,9 @@ During a contest, the only things that normally change are `Solver.solve()`, `So
 | `src/main/java/io/IOUtils.java` | `readList` (one line → list), `readGrid` (height lines → 2D list). Delimiter is a **regex**. |
 | `src/main/java/io/IOManager.java` | Finds input files, creates output files, calls `solve`/`verify` per file. |
 | `src/main/java/solver/SolutionVerifier.java` | Selenium/Chrome driver around the visualizer. |
-| `input/levelN/` | Unzipped level files (gitignored). |
-| `output/` | `<input basename>.txt` per input file (a leading `in_` becomes `out_`), plus `<basename>.ver` when the verifier is on (gitignored). |
+| `input/levelN/` | Unzipped level files. |
+| `output/` | `<input basename>.txt` per input file (a leading `in_` becomes `out_`), plus `<basename>.ver` when the verifier is on. Scratch: created if missing, wiped on every run. |
+| `solutions/` | Only if `<solutionPath>` is set: a copy of every non-empty output file, in the same sub-folders as below `input/` (`input/contest/level1/` → `solutions/contest/level1/`). Never cleaned, meant to be committed. |
 
 `input/level99/` is a dummy level (sum of each line) matching the template code in `Solver.java`.
 `input/visualizer.html` is a sample from CCC 41 ("Spaceship") and is unrelated to level99.
@@ -123,9 +124,11 @@ Verifier limits:
   single characters.
 - Only `IOException` is caught around `solve()`. Any other exception aborts the whole run: later files get no
   output, and with the verifier enabled the Chrome process stays open.
-- `<cleanupOutput>true</cleanupOutput>` deletes everything inside `outputPath` on every run, recursively —
-  including the tracked `output/.gitkeep` (restore with `git checkout -- output/.gitkeep`, don't commit the
-  deletion). Never point `outputPath` at a directory with anything worth keeping.
+- `<cleanupOutput>true</cleanupOutput>` deletes everything inside `outputPath` on every run, recursively.
+  Never point `outputPath` at a directory with anything worth keeping; outputs that should survive go to
+  `<solutionPath>`.
+- `<solutionPath>` is overwritten by **every** run, including runs of a half-finished solver — check
+  `git diff` before committing. The sub-folder is taken relative to the first folder of `inputPath`.
 - The level filter looks for `levelN` / `level-N` / `level_N` in the **file name** (not the folder) and does not
   match longer numbers (`1` skips `level10_*`). The example filter is a plain substring match on `example`.
 - Output files are named by input basename only; two inputs with the same name in different folders overwrite

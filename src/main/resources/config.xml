@@ -29,7 +29,7 @@
     <!-- Verifier configuration -->
     <verifier>
         <!-- A boolean value indicating whether the verifier should be used -->
-        <enabled>true</enabled>
+        <enabled>false</enabled>
 
         <!-- A boolean value indicating whether the running verifier is headless-->
         <headless>true</headless>

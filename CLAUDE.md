@@ -10,6 +10,9 @@ During a contest, the only things that normally change are `Solver.solve()`, `So
   one: same story, more rules, bigger inputs. Keep the solver code reusable across levels.
 - Each level comes with a **statement** (PDF/web page) and a **zip of input files**:
   `levelN_example.in`, `levelN_example.out` (expected output for the example) and `levelN_1.in` … `levelN_5.in`.
+  Newer contests name them `in_level-N_0-example.txt`, `out_level-N_0-example.txt` (expected output) and
+  `in_level-N_1-small.txt` … `in_level-N_k-large.txt`, often with a `sandbox-level-N.html` visualizer. Both
+  schemes are picked up; `out_*` files are never treated as input.
 - For every `levelN_k.in` an output file is uploaded to the contest platform, which answers valid/invalid
   immediately. All files of a level must be accepted to unlock the next level; usually the source code is
   uploaded as well.
@@ -31,7 +34,7 @@ During a contest, the only things that normally change are `Solver.solve()`, `So
 | `src/main/java/io/IOManager.java` | Finds input files, creates output files, calls `solve`/`verify` per file. |
 | `src/main/java/solver/SolutionVerifier.java` | Selenium/Chrome driver around the visualizer. |
 | `input/levelN/` | Unzipped level files (gitignored). |
-| `output/` | `<input basename>.txt` per input file, plus `<basename>.ver` when the verifier is on (gitignored). |
+| `output/` | `<input basename>.txt` per input file (a leading `in_` becomes `out_`), plus `<basename>.ver` when the verifier is on (gitignored). |
 
 `input/level99/` is a dummy level (sum of each line) matching the template code in `Solver.java`.
 `input/visualizer.html` is a sample from CCC 41 ("Spaceship") and is unrelated to level99.
@@ -55,6 +58,10 @@ that. Requires JDK 21 and Maven.
 4. Compare with the expected example output:
    ```bash
    diff --strip-trailing-cr output/levelN_example.txt input/levelN/levelN_example.out
+   ```
+   With the newer naming both files are called `out_level-N_0-example.txt`:
+   ```bash
+   diff --strip-trailing-cr output/out_level-N_0-example.txt input/levelN/out_level-N_0-example.txt
    ```
    No output means identical. If the level accepts multiple valid answers, use the visualizer instead (below).
 5. Set `<targetSpecificLevel>N</targetSpecificLevel>`, run, and sanity-check the outputs (line count matches the
@@ -119,7 +126,8 @@ Verifier limits:
 - `<cleanupOutput>true</cleanupOutput>` deletes everything inside `outputPath` on every run, recursively —
   including the tracked `output/.gitkeep` (restore with `git checkout -- output/.gitkeep`, don't commit the
   deletion). Never point `outputPath` at a directory with anything worth keeping.
-- The level filter is a substring match on the file name: `1` also matches `level10_*`.
+- The level filter looks for `levelN` / `level-N` / `level_N` in the **file name** (not the folder) and does not
+  match longer numbers (`1` skips `level10_*`). The example filter is a plain substring match on `example`.
 - Output files are named by input basename only; two inputs with the same name in different folders overwrite
   each other.
 - Debug output: `log.fine(...)` in `solve()` plus `<logLevel>FINE</logLevel>`; `FINER` also lists the files found.

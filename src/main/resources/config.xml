@@ -13,7 +13,7 @@
             <extension>.txt</extension>
         </allowedExtensions>
 
-        <!-- (Optional) Specifies a target level. This is specific for CCC (level<number>.in files). The format '<number>e' indicates the number part and an 'e' (both optional). If 'e' is present only example files are considered. Number -1 represents all levels -->
+        <!-- (Optional) Specifies a target level. This is specific for CCC (level<number>_*.in or in_level-<number>_*.txt files). The format '<number>e' indicates the number part and an 'e' (both optional). If 'e' is present only example files are considered. Number -1 represents all levels -->
         <targetSpecificLevel>99</targetSpecificLevel>
 
         <!-- (Optional) A boolean value indicating whether the output directory should be cleaned up (i.e., existing files removed) before writing new output files -->

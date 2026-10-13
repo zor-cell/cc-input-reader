@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Scanner;
 import java.io.FileWriter;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 /**
  * Manages input and output file operations for the application.
@@ -21,8 +22,12 @@ import java.util.logging.Logger;
 public class IOManager {
     private static final Logger log = CustomLogger.getLogger();
 
+    // newer contests ship in_level-N_k-size.txt together with the expected out_level-N_0-example.txt
+    private static final String INPUT_PREFIX = "in_";
+    private static final String EXPECTED_OUTPUT_PREFIX = "out_";
+
     private final Config config;
-    private int targetSpecificLevelInt;
+    private Pattern targetLevelPattern;
     private boolean targetExampleFiles;
 
     private List<File> inputFiles;
@@ -54,8 +59,9 @@ public class IOManager {
         if (file.isFile()) {
             String fileName = file.getName();
             int lastDotIndex = fileName.lastIndexOf('.');
-            if( (targetSpecificLevelInt != -1 && !fileName.contains(String.format("level%d", targetSpecificLevelInt)))
-                    || (targetExampleFiles && !fileName.contains("example"))) return;
+            if( (targetLevelPattern != null && !targetLevelPattern.matcher(fileName).find())
+                    || (targetExampleFiles && !fileName.contains("example"))
+                    || fileName.startsWith(EXPECTED_OUTPUT_PREFIX)) return;
             if (lastDotIndex > 0) {
                 String extension = fileName.substring(lastDotIndex).toLowerCase();
                 if (config.allowedExtensions().contains(extension)) {
@@ -85,7 +91,12 @@ public class IOManager {
 
         for (File inputFile : this.inputFiles) {
             String filePath = outputPath + "/";
-            String fileName = inputFile.getName().split("\\.")[0] + ".txt";
+            String baseName = inputFile.getName().split("\\.")[0];
+            // in_level-8_1-small.txt -> out_level-8_1-small.txt
+            if (baseName.startsWith(INPUT_PREFIX)) {
+                baseName = EXPECTED_OUTPUT_PREFIX + baseName.substring(INPUT_PREFIX.length());
+            }
+            String fileName = baseName + ".txt";
 
             this.outputFiles.add(new File(filePath + fileName));
         }
@@ -100,7 +111,7 @@ public class IOManager {
      * @param targetSpecificLevel The string representing the target specific level and whether to target example files.
      */
     private void setTargetSpecificLevel(String targetSpecificLevel) {
-        this.targetSpecificLevelInt = -1;
+        this.targetLevelPattern = null;
         this.targetExampleFiles = false;
 
         if (targetSpecificLevel == null || targetSpecificLevel.isBlank()) {
@@ -123,7 +134,11 @@ public class IOManager {
         // check number
         if (!targetSpecificLevel.isEmpty()) {
             try {
-                targetSpecificLevelInt = Integer.parseInt(targetSpecificLevel);
+                int level = Integer.parseInt(targetSpecificLevel);
+                if (level != -1) {
+                    // matches level8_1.in as well as in_level-8_1-small.txt, but not level80_1.in
+                    targetLevelPattern = Pattern.compile("level[-_]?" + level + "(?!\\d)");
+                }
             } catch (NumberFormatException e) {
                 throw new IllegalArgumentException("The targetSpecificLevel value doesn't match expectation. Please check it in config. Has to be of format <number><e> (both optional)");
             }

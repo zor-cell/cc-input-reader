@@ -120,6 +120,12 @@ public class ConfigLoader {
             headless = Boolean.parseBoolean(headlessStr);
         }
 
+        boolean onlyFailures = false;
+        String onlyFailuresStr = getTagContentFromParent(verifierElement, "onlyFailures");
+        if (onlyFailuresStr != null) {
+            onlyFailures = Boolean.parseBoolean(onlyFailuresStr);
+        }
+
         String visualizerPath = getTagContentFromParent(verifierElement, "visualizerPath");
         if (enabled && visualizerPath == null) {
             throw new IllegalArgumentException("Visualizer is enabled but 'visualizerPath' is missing.");
@@ -145,6 +151,7 @@ public class ConfigLoader {
         return new VerifierConfig(
                 enabled,
                 headless,
+                onlyFailures,
                 visualizerPath,
                 inputLocator,
                 outputLocator,

@@ -29,10 +29,13 @@
     <!-- Verifier configuration -->
     <verifier>
         <!-- A boolean value indicating whether the verifier should be used -->
-        <enabled>false</enabled>
+        <enabled>true</enabled>
 
         <!-- A boolean value indicating whether the running verifier is headless-->
         <headless>true</headless>
+
+        <!-- (Optional) A boolean value indicating whether only test cases that are not valid are written to the .ver files. An empty .ver file then means that every test case is valid -->
+        <onlyFailures>false</onlyFailures>
 
         <!-- Specifies the input path of the visualizer file -->
         <visualizerPath>./input/visualizer.html</visualizerPath>

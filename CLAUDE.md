@@ -72,7 +72,7 @@ that. Requires JDK 21 and Maven.
 
 ## Verifying with a visualizer HTML
 
-`SolutionVerifier` opens the HTML in headless Chrome, types one test case into the input textarea and its
+`SolutionVerifier` opens the HTML in headless Chrome, puts one test case into the input textarea and its
 solution into the output textarea, then reads the status element. Setup for a new contest:
 
 1. Put the file into `input/` and set `<visualizerPath>`.
@@ -84,8 +84,8 @@ solution into the output textarea, then reads the status element. Setup for a ne
 3. Read the validation code in the HTML's `<script>`. It tells you
    - what the page expects as input — normally **one test case**, not the whole `.in` file,
    - the status strings (`SUCCESS` / `FAILURE` in the sample),
-   - when validation runs. It must run on the textarea's `input` event; a visualizer that needs a button click
-     is not supported by `SolutionVerifier` as is.
+   - when validation runs. It must run on the `input` event of the input or the solution field; a visualizer
+     that needs a button click is not supported by `SolutionVerifier` as is.
 
    This script is also the most precise spec of what counts as a valid solution — read it when the statement
    is ambiguous.
@@ -104,16 +104,25 @@ solution into the output textarea, then reads the status element. Setup for a ne
    grep "exited with FAILURE" output/*.ver
    ```
    Each case produces one entry `Validation run <i> exited with <status>! Additional Info: '<message>' | ...`.
-   A case whose check threw (console shows `SEVERE: Visualizer failed`) writes **no** entry, so the SUCCESS
-   count must equal the number of cases.
+   If the page sets no status within 5 s the entry says `exited with TIMEOUT`, and a case whose check threw
+   (console shows `SEVERE: Visualizer failed`) says `exited with ERROR`. The SUCCESS count must equal the
+   number of cases.
+
+   With `<onlyFailures>true</onlyFailures>` entries whose status is exactly `SUCCESS` are left out, so an
+   empty `.ver` file means that every case is valid. List the files that still contain something:
+   ```bash
+   find output -name "*.ver" -size +0
+   ```
 
 Verifier limits:
 
 - Chrome must be installed; the first run downloads a matching chromedriver (needs internet, ~8 s startup).
-- Text is typed with `sendKeys`, and the page revalidates on every keystroke: ~1.5 s per 1 000 characters,
-  growing faster than linearly (10 000 chars ≈ 22 s, ~40 000 chars hit the 3-minute timeout). For big cases
-  verify only the example and the small files, or set the value via `JavascriptExecutor` and dispatch a
-  single `input` event.
+- The page is loaded once per input file and reused for all of its cases. Both fields are set through
+  `JavascriptExecutor` and get one `input` event each, so the page validates twice per case regardless of the
+  text length (CCC 41 level 8: 100 cases with 670 000 characters in ~8 s). A single validation may take up to
+  3 minutes before the case is aborted.
+- Since the page is not reloaded between cases, a visualizer that keeps state apart from the two fields can
+  carry it over to the next case.
 - Set `<headless>false</headless>` to watch the visualizer while debugging.
 
 ## Gotchas
